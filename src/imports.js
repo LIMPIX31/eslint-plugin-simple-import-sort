@@ -24,19 +24,8 @@ module.exports = {
     fixable: "code",
     schema: [
       {
-        type: "object",
-        properties: {
-          groups: {
-            type: "array",
-            items: {
-              type: "array",
-              items: {
-                type: "string",
-              },
-            },
-          },
-        },
-        additionalProperties: false,
+        type: "any",
+        additionalProperties: true,
       },
     ],
     docs: {
@@ -47,11 +36,7 @@ module.exports = {
     },
   },
   create: (context) => {
-    const { groups: rawGroups = defaultGroups } = context.options[0] || {};
-
-    const outerGroups = rawGroups.map((groups) =>
-      groups.map((item) => RegExp(item, "u"))
-    );
+    const { matchers, order } = context.options[0] || {};
 
     const parents = new Set();
 
@@ -65,7 +50,7 @@ module.exports = {
           for (const chunk of shared.extractChunks(parent, (node) =>
             isImport(node) ? "PartOfChunk" : "NotPartOfChunk"
           )) {
-            maybeReportChunkSorting(chunk, context, outerGroups);
+            maybeReportChunkSorting(chunk, context, matchers, order);
           }
         }
         parents.clear();
@@ -74,7 +59,7 @@ module.exports = {
   },
 };
 
-function maybeReportChunkSorting(chunk, context, outerGroups) {
+function maybeReportChunkSorting(chunk, context, matchers, order) {
   const sourceCode = context.getSourceCode();
   const items = shared.getImportExportItems(
     chunk,
@@ -82,52 +67,42 @@ function maybeReportChunkSorting(chunk, context, outerGroups) {
     isSideEffectImport,
     getSpecifiers
   );
-  const sortedItems = makeSortedItems(items, outerGroups);
+  const sortedItems = makeSortedItems(items, matchers, order);
   const sorted = shared.printSortedItems(sortedItems, items, sourceCode);
   const { start } = items[0];
   const { end } = items[items.length - 1];
   shared.maybeReportSorting(context, sorted, start, end);
 }
 
-function makeSortedItems(items, outerGroups) {
-  const itemGroups = outerGroups.map((groups) =>
-    groups.map((regex) => ({ regex, items: [] }))
+function makeSortedItems(items, matchers, order) {
+  const itemGroups = matchers.map(({ fn, name }) =>
+    ({ fn, name, items: [] })
   );
-  const rest = [];
 
   for (const item of items) {
     const { originalSource } = item.source;
+
     const source = item.isSideEffectImport
       ? `\0${originalSource}`
       : item.source.kind !== "value"
       ? `${originalSource}\0`
       : originalSource;
-    const [matchedGroup] = shared
-      .flatMap(itemGroups, (groups) =>
-        groups.map((group) => [group, group.regex.exec(source)])
-      )
-      .reduce(
-        ([group, longestMatch], [nextGroup, nextMatch]) =>
-          nextMatch != null &&
-          (longestMatch == null || nextMatch[0].length > longestMatch[0].length)
-            ? [nextGroup, nextMatch]
-            : [group, longestMatch],
-        [undefined, undefined]
-      );
-    if (matchedGroup == null) {
-      rest.push(item);
-    } else {
-      matchedGroup.items.push(item);
+
+    for (const { fn, items: groupItems } of itemGroups) {
+      const isMatch = fn(source)
+
+      if (isMatch) {
+        groupItems.push(item)
+        break
+      }
     }
   }
 
+  itemGroups.sort(({ name: a }, { name: b }) => order.indexOf(a) - order.indexOf(b))
+
   return itemGroups
-    .concat([[{ regex: /^/, items: rest }]])
-    .map((groups) => groups.filter((group) => group.items.length > 0))
-    .filter((groups) => groups.length > 0)
-    .map((groups) =>
-      groups.map((group) => shared.sortImportExportItems(group.items))
-    );
+    .filter(({ items: f }) => f.length > 0)
+    .map(({ items: f }) => shared.sortImportExportItems(f));
 }
 
 // Exclude "ImportDefaultSpecifier" – the "def" in `import def, {a, b}`.

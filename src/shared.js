@@ -61,18 +61,12 @@ function maybeReportSorting(context, sorted, start, end) {
 function printSortedItems(sortedItems, originalItems, sourceCode) {
   const newline = guessNewline(sourceCode);
 
-  const sorted = sortedItems
-    .map((groups) =>
-      groups
-        .map((groupItems) => groupItems.map((item) => item.code).join(newline))
-        .join(newline)
-    )
-    .join(newline + newline);
+  const sorted = sortedItems.map((items) => items.map(({ code }) => code).join(newline)).join(newline + newline)
 
   // Edge case: If the last import/export (after sorting) ends with a line
   // comment and there’s code (or a multiline block comment) on the same line,
   // add a newline so we don’t accidentally comment stuff out.
-  const flattened = flatMap(sortedItems, (groups) => [].concat(...groups));
+  const flattened = sortedItems;
   const lastSortedItem = flattened[flattened.length - 1];
   const lastOriginalItem = originalItems[originalItems.length - 1];
   const nextToken = lastSortedItem.needsNewline
