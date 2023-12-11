@@ -1,12 +1,15 @@
 {
   "private": true,
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "pretest": "prettier --check . && eslint . --report-unused-disable-directives",
     "test": "jest --coverage",
     "posttest": "npm run build",
     "build": "node build.js",
     "examples": "eslint --rulesdir src --no-ignore --fix-dry-run --format json --report-unused-disable-directives examples --ext .js,.ts,.vue,.md"
+  },
+  "dependencies": {
+    "globby": "14.0.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.19.1",

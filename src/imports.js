@@ -1,24 +1,17 @@
 "use strict";
 
-const shared = require("./shared");
+import * as shared from "./shared.js"
+import {loadWorkspaceRegex} from "./workspaces.js"
 
-const defaultGroups = [
-  // Side effect imports.
-  ["^\\u0000"],
-  // Node.js builtins prefixed with `node:`.
-  ["^node:"],
-  // Packages.
-  // Things that start with a letter (or digit or underscore), or `@` followed by a letter.
-  ["^@?\\w"],
-  // Absolute imports and other imports such as Vue-style `@/foo`.
-  // Anything not matched in another group.
-  ["^"],
-  // Relative imports.
-  // Anything that starts with a dot.
-  ["^\\."],
-];
+const nodeMatcher =
+    // eslint-disable-next-line no-control-regex
+    /^(child_process|crypto|events|fs|http|https|os|path|module|util|url|stream|events|buffer)(\/.*)?\u0000?$/u
+// eslint-disable-next-line no-control-regex
+const privilegedMatcher = /^(react|vite|next|vue)(\/.*)?\u0000?$/
 
-module.exports = {
+const workspaceRegex = await loadWorkspaceRegex()
+
+export default {
   meta: {
     type: "layout",
     fixable: "code",
@@ -36,7 +29,34 @@ module.exports = {
     },
   },
   create: (context) => {
-    const { matchers, order } = context.options[0] || {};
+    const matchers = [
+      {
+        name: 'side',
+        fn: (s) => s.startsWith('\0'),
+      },
+      {
+        name: 'relative',
+        fn: (s) => s.startsWith('.'),
+      },
+      {
+        name: 'node',
+        fn: (s) => s.startsWith('node:') || nodeMatcher.test(s),
+      },
+      {
+        name: 'privileged',
+        fn: (s) => privilegedMatcher.test(s),
+      },
+      {
+        name: 'workspace',
+        fn: (s) => workspaceRegex.test(s),
+      },
+      {
+        name: 'unqualified',
+        fn: () => true,
+      },
+    ]
+
+    const order = ['privileged', 'side', 'node', 'unqualified', 'workspace', 'relative']
 
     const parents = new Set();
 

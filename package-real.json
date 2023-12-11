@@ -1,11 +1,11 @@
 {
   "name": "@lmpx-fork/eslint-plugin-simple-import-sort",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "license": "MIT",
   "author": "Simon Lydell",
   "repository": "lydell/eslint-plugin-simple-import-sort",
   "description": "Easy autofixable import sorting",
-  "type": "commonjs",
+  "type": "module",
   "keywords": [
     "eslint",
     "eslint-plugin",
@@ -17,6 +17,9 @@
     "sorter",
     "sorting"
   ],
+  "dependencies": {
+    "globby": "14.0.0"
+  },
   "peerDependencies": {
     "eslint": ">=5.0.0"
   }

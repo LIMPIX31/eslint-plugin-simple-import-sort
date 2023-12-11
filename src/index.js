@@ -1,9 +1,9 @@
 "use strict";
 
-const importsRule = require("./imports");
-const exportsRule = require("./exports");
+import importsRule from "./imports.js"
+import exportsRule from "./exports.js"
 
-module.exports = {
+export default {
   rules: {
     imports: importsRule,
     exports: exportsRule,

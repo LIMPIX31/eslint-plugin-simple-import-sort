@@ -1,8 +1,8 @@
 "use strict";
 
-const shared = require("./shared");
+import * as shared from "./shared.js";
 
-module.exports = {
+export default {
   meta: {
     type: "layout",
     fixable: "code",

@@ -848,7 +848,7 @@ function flatMap(array, fn) {
   return [].concat(...array.map(fn));
 }
 
-module.exports = {
+export {
   extractChunks,
   flatMap,
   getImportExportItems,
