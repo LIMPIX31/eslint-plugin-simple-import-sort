@@ -11,7 +11,7 @@ export async function loadWorkspaceRegex() {
 
         if (workspaces?.length > 0) {
             const pkgs = await globby(
-                workspaces.map((w) => (w.endsWith('/*') ? w.substring(0, w.length - 2) : w)).map((w) => `${w}/package.json`),
+                workspaces.map((w) => (w.endsWith('/*') ? w + '*' : w)).map((w) => `${w}/package.json`),
                 {
                     cwd: process.cwd(),
                     onlyFiles: true,
