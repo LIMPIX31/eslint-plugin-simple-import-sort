@@ -7,7 +7,7 @@ const nodeMatcher =
     // eslint-disable-next-line no-control-regex
     /^(child_process|crypto|events|fs|http|https|os|path|module|util|url|stream|events|buffer)(\/.*)?\u0000?$/u
 // eslint-disable-next-line no-control-regex
-const privilegedMatcher = /^(react|vite|next|vue)(\/.*)?\u0000?$/
+const privilegedMatcher = /^(react|vite|next|vue|@remix-run\/.+?)(\/.*)?\u0000?$/
 
 const workspaceRegex = await loadWorkspaceRegex()
 
@@ -39,6 +39,10 @@ export default {
         fn: (s) => s.startsWith('.'),
       },
       {
+        name: 'mapping',
+        fn: (s) => s.startsWith('@/') || s.startsWith('&')
+      },
+      {
         name: 'node',
         fn: (s) => s.startsWith('node:') || nodeMatcher.test(s),
       },
@@ -56,7 +60,7 @@ export default {
       },
     ]
 
-    const order = ['privileged', 'side', 'node', 'unqualified', 'workspace', 'relative']
+    const order = ['privileged', 'side', 'node', 'unqualified', 'workspace', 'mapping', 'relative']
 
     const parents = new Set();
 
