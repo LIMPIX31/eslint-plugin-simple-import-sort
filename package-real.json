@@ -1,6 +1,6 @@
 {
   "name": "@lmpx-fork/eslint-plugin-simple-import-sort",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "license": "MIT",
   "author": "Simon Lydell",
   "repository": "lydell/eslint-plugin-simple-import-sort",

@@ -40,7 +40,7 @@ export default {
       },
       {
         name: 'mapping',
-        fn: (s) => s.startsWith('@/') || s.startsWith('&')
+        fn: (s) => s.startsWith('@/') || s.startsWith('&') || s.startsWith('#')
       },
       {
         name: 'node',
